@@ -14,7 +14,111 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      cron_logs: {
+        Row: {
+          error_message: string | null
+          id: string
+          pool_type: string
+          pools_saved: number
+          run_at: string
+          status: string
+        }
+        Insert: {
+          error_message?: string | null
+          id?: string
+          pool_type: string
+          pools_saved?: number
+          run_at?: string
+          status: string
+        }
+        Update: {
+          error_message?: string | null
+          id?: string
+          pool_type?: string
+          pools_saved?: number
+          run_at?: string
+          status?: string
+        }
+        Relationships: []
+      }
+      pool_snapshots: {
+        Row: {
+          fees: number
+          id: string
+          pool_address: string
+          pool_type: string
+          price: number
+          timestamp: string
+          tvl: number
+          volume: number
+        }
+        Insert: {
+          fees?: number
+          id?: string
+          pool_address: string
+          pool_type: string
+          price?: number
+          timestamp?: string
+          tvl?: number
+          volume?: number
+        }
+        Update: {
+          fees?: number
+          id?: string
+          pool_address?: string
+          pool_type?: string
+          price?: number
+          timestamp?: string
+          tvl?: number
+          volume?: number
+        }
+        Relationships: []
+      }
+      pools_meta: {
+        Row: {
+          created_at: string | null
+          holders: number
+          market_cap: number
+          pool_address: string
+          pool_type: string
+          token_a_logo: string
+          token_a_mint: string
+          token_a_symbol: string
+          token_b_logo: string
+          token_b_mint: string
+          token_b_symbol: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string | null
+          holders?: number
+          market_cap?: number
+          pool_address: string
+          pool_type: string
+          token_a_logo?: string
+          token_a_mint?: string
+          token_a_symbol?: string
+          token_b_logo?: string
+          token_b_mint?: string
+          token_b_symbol?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string | null
+          holders?: number
+          market_cap?: number
+          pool_address?: string
+          pool_type?: string
+          token_a_logo?: string
+          token_a_mint?: string
+          token_a_symbol?: string
+          token_b_logo?: string
+          token_b_mint?: string
+          token_b_symbol?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
