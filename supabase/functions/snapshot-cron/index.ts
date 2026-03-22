@@ -180,7 +180,7 @@ Deno.serve(async (req) => {
 
   // Fetch and save DAMM pools
   try {
-    const pools = await fetchPools(DAMM_BASE, "damm");
+    const pools = await fetchDAMMPools();
     const now = new Date().toISOString();
 
     const snapshots = pools.map((p) => ({
