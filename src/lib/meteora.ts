@@ -1,7 +1,7 @@
 import { PoolData } from './types';
 
 const DLMM_API = 'https://dlmm-api.meteora.ag';
-const DAMM_API = 'https://amm-v2.meteora.ag';
+const DAMM_API = 'https://dammv2-api.meteora.ag';
 const JUPITER_TOKEN_LIST = 'https://token.jup.ag/all';
 
 let tokenLogoCache: Record<string, string> = {};
