@@ -46,21 +46,27 @@ function normalizeDLMM(raw: any): MeteoraPool {
 }
 
 function normalizeDAMM(raw: any): MeteoraPool {
+  // dammv2-api fields: pool_address, pool_name, token_a_symbol, token_b_symbol,
+  // token_a_mint, token_b_mint, tvl, volume24h, fee24h, pool_price,
+  // created_at_slot_timestamp
+  const createdTs = raw.created_at_slot_timestamp
+    ? new Date(raw.created_at_slot_timestamp * 1000).toISOString()
+    : raw.created_at ?? new Date().toISOString();
   return {
     address: raw.pool_address ?? raw.address ?? "",
-    token_a_symbol: raw.pool_token_mints?.[0]?.symbol ?? raw.token_a_symbol ?? "",
-    token_b_symbol: raw.pool_token_mints?.[1]?.symbol ?? raw.token_b_symbol ?? "",
-    token_a_mint: raw.pool_token_mints?.[0]?.address ?? raw.token_a_mint ?? "",
-    token_b_mint: raw.pool_token_mints?.[1]?.address ?? raw.token_b_mint ?? "",
+    token_a_symbol: raw.token_a_symbol ?? "",
+    token_b_symbol: raw.token_b_symbol ?? "",
+    token_a_mint: raw.token_a_mint ?? "",
+    token_b_mint: raw.token_b_mint ?? "",
     token_a_logo: "",
     token_b_logo: "",
-    tvl: parseFloat(raw.pool_tvl ?? raw.tvl ?? 0),
-    volume: parseFloat(raw.trading_volume ?? raw.volume_24h ?? raw.volume ?? 0),
-    fees: parseFloat(raw.trading_fee ?? raw.fees_24h ?? raw.fees ?? 0),
-    price: parseFloat(raw.current_price ?? raw.price ?? 0),
-    market_cap: parseFloat(raw.market_cap ?? 0),
-    holders: parseInt(raw.holders ?? 0),
-    created_at: raw.created_at ?? new Date().toISOString(),
+    tvl: parseFloat(raw.tvl ?? 0),
+    volume: parseFloat(raw.volume24h ?? raw.trading_volume ?? 0),
+    fees: parseFloat(raw.fee24h ?? raw.trading_fee ?? 0),
+    price: parseFloat(raw.pool_price ?? raw.current_price ?? 0),
+    market_cap: 0,
+    holders: 0,
+    created_at: createdTs,
   };
 }
 
