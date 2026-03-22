@@ -81,16 +81,18 @@ async function fetchWithRetry(url: string, retries = 3): Promise<Response> {
   throw new Error("All retries failed");
 }
 
-async function fetchPools(
-  base: string,
-  poolType: string
-): Promise<MeteoraPool[]> {
-  const res = await fetchWithRetry(
-    `${base}/pools?page=1&limit=100&sort_by=volume&order=desc`
-  );
+async function fetchDLMMPools(): Promise<MeteoraPool[]> {
+  const res = await fetchWithRetry(DLMM_URL);
   const data = await res.json();
-  const pools = Array.isArray(data) ? data : data.data ?? data.pools ?? [];
-  return pools.map((p: any) => normalizePool(p));
+  const pairs = data.pairs ?? data.data ?? data ?? [];
+  return (Array.isArray(pairs) ? pairs : []).map((p: any) => normalizeDLMM(p));
+}
+
+async function fetchDAMMPools(): Promise<MeteoraPool[]> {
+  const res = await fetchWithRetry(DAMM_URL);
+  const data = await res.json();
+  const pools = data.data ?? data.pools ?? data ?? [];
+  return (Array.isArray(pools) ? pools : []).map((p: any) => normalizeDAMM(p));
 }
 
 Deno.serve(async (req) => {
