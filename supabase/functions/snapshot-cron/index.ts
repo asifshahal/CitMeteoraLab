@@ -26,29 +26,41 @@ interface MeteoraPool {
   created_at: string;
 }
 
-function normalizePool(raw: any): MeteoraPool {
+function normalizeDLMM(raw: any): MeteoraPool {
   return {
-    address: raw.address ?? raw.pool_address ?? raw.id ?? "",
-    token_a_symbol:
-      raw.token_a_symbol ?? raw.tokenASymbol ?? raw.mint_x_symbol ?? "",
-    token_b_symbol:
-      raw.token_b_symbol ?? raw.tokenBSymbol ?? raw.mint_y_symbol ?? "",
-    token_a_mint: raw.token_a_mint ?? raw.mintX ?? raw.mint_x ?? "",
-    token_b_mint: raw.token_b_mint ?? raw.mintY ?? raw.mint_y ?? "",
-    token_a_logo: raw.token_a_logo ?? raw.tokenALogo ?? "",
-    token_b_logo: raw.token_b_logo ?? raw.tokenBLogo ?? "",
-    tvl: parseFloat(raw.tvl ?? raw.liquidity ?? 0),
-    volume: parseFloat(
-      raw.volume_24h ?? raw.volume ?? raw.cumulative_volume ?? 0
-    ),
-    fees: parseFloat(
-      raw.fees_24h ?? raw.fees ?? raw.cumulative_fee_volume ?? 0
-    ),
+    address: raw.address ?? raw.pair_address ?? "",
+    token_a_symbol: raw.name?.split("-")[0]?.trim() ?? raw.mint_x_symbol ?? "",
+    token_b_symbol: raw.name?.split("-")[1]?.trim() ?? raw.mint_y_symbol ?? "",
+    token_a_mint: raw.mint_x ?? "",
+    token_b_mint: raw.mint_y ?? "",
+    token_a_logo: "",
+    token_b_logo: "",
+    tvl: parseFloat(raw.liquidity ?? raw.tvl ?? 0),
+    volume: parseFloat(raw.trade_volume_24h ?? raw.volume ?? raw.cumulative_volume ?? 0),
+    fees: parseFloat(raw.fees_24h ?? raw.fees ?? raw.cumulative_fee_volume ?? 0),
     price: parseFloat(raw.current_price ?? raw.price ?? 0),
     market_cap: parseFloat(raw.market_cap ?? raw.mc ?? 0),
     holders: parseInt(raw.holders ?? raw.holder_count ?? 0),
-    created_at:
-      raw.created_at ?? raw.pool_created_at ?? new Date().toISOString(),
+    created_at: raw.created_at ?? raw.pool_created_at ?? new Date().toISOString(),
+  };
+}
+
+function normalizeDAMM(raw: any): MeteoraPool {
+  return {
+    address: raw.pool_address ?? raw.address ?? "",
+    token_a_symbol: raw.pool_token_mints?.[0]?.symbol ?? raw.token_a_symbol ?? "",
+    token_b_symbol: raw.pool_token_mints?.[1]?.symbol ?? raw.token_b_symbol ?? "",
+    token_a_mint: raw.pool_token_mints?.[0]?.address ?? raw.token_a_mint ?? "",
+    token_b_mint: raw.pool_token_mints?.[1]?.address ?? raw.token_b_mint ?? "",
+    token_a_logo: "",
+    token_b_logo: "",
+    tvl: parseFloat(raw.pool_tvl ?? raw.tvl ?? 0),
+    volume: parseFloat(raw.trading_volume ?? raw.volume_24h ?? raw.volume ?? 0),
+    fees: parseFloat(raw.trading_fee ?? raw.fees_24h ?? raw.fees ?? 0),
+    price: parseFloat(raw.current_price ?? raw.price ?? 0),
+    market_cap: parseFloat(raw.market_cap ?? 0),
+    holders: parseInt(raw.holders ?? 0),
+    created_at: raw.created_at ?? new Date().toISOString(),
   };
 }
 
