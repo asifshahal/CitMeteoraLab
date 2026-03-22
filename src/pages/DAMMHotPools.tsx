@@ -28,7 +28,7 @@ export default function DAMMHotPools() {
   const loadPools = useCallback(async () => {
     try {
       setIsLoading(true);
-      const data = await fetchDAMMPools();
+      const data = await fetchPoolsFromBackend('damm');
       setPools(data);
       setLastUpdated(Date.now());
       setError(null);

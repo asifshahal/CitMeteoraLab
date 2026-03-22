@@ -28,7 +28,7 @@ export default function DLMMHotPools() {
   const loadPools = useCallback(async () => {
     try {
       setIsLoading(true);
-      const data = await fetchDLMMPools();
+      const data = await fetchPoolsFromBackend('dlmm');
       setPools(data);
       setLastUpdated(Date.now());
       setError(null);
