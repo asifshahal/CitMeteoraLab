@@ -6,8 +6,8 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-const DLMM_BASE = "https://dlmm.datapi.meteora.ag";
-const DAMM_BASE = "https://damm-v2.datapi.meteora.ag";
+const DLMM_URL = "https://dlmm-api.meteora.ag/pair/all_with_pagination?page=0&limit=100&sort_key=volume&order_by=desc";
+const DAMM_URL = "https://amm-v2.meteora.ag/pools?page=0&limit=100&sort_key=volume&order_by=desc";
 
 interface MeteoraPool {
   address: string;
