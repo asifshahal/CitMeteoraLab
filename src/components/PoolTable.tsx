@@ -145,7 +145,7 @@ export default function PoolTable({ pools, isLoading }: PoolTableProps) {
 
                   {/* 30min Fees */}
                   <td className="px-4 py-3 font-mono-numbers text-foreground whitespace-nowrap">
-                    {formatCurrency(pool.fees_30min)}
+                    {formatCurrency(pool.fees_delta ?? pool.fees_30min)}
                   </td>
 
                   {/* Price 5m */}
