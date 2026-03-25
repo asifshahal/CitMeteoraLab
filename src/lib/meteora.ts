@@ -1,6 +1,6 @@
 import { PoolData } from './types';
 
-const DLMM_API = 'https://dlmm-api.meteora.ag';
+const DLMM_API = 'https://dlmm.datapi.meteora.ag';
 const DAMM_API = 'https://dammv2-api.meteora.ag';
 const JUPITER_TOKEN_LIST = 'https://token.jup.ag/all';
 
@@ -29,33 +29,48 @@ function getTokenLogo(mint: string): string {
 
 export async function fetchDLMMPools(): Promise<PoolData[]> {
   await loadTokenLogos();
-  
-  const res = await fetch(`${DLMM_API}/pair/all_with_pagination?page=0&limit=100&sort_key=volume&order_by=desc`);
+
+  const res = await fetch(`${DLMM_API}/pools?page=1&page_size=100&sort_by=fee_tvl_ratio_30m:desc`);
   if (!res.ok) throw new Error(`DLMM API error: ${res.status}`);
-  const data = await res.json();
-  
-  const pairs = data.pairs || data.data || data || [];
-  
-  return pairs.map((p: any) => ({
-    pool_address: p.address || p.pair_address || '',
-    pool_type: 'dlmm' as const,
-    token_a_symbol: p.name?.split('-')[0]?.trim() || p.mint_x_symbol || 'Unknown',
-    token_b_symbol: p.name?.split('-')[1]?.trim() || p.mint_y_symbol || 'Unknown',
-    token_a_mint: p.mint_x || '',
-    token_b_mint: p.mint_y || '',
-    token_a_logo: getTokenLogo(p.mint_x || ''),
-    token_b_logo: getTokenLogo(p.mint_y || ''),
-    tvl: Number(p.liquidity) || Number(p.tvl) || 0,
-    fee_tvl_ratio: p.liquidity > 0 ? ((Number(p.fees_24h) || 0) / Number(p.liquidity)) * 100 / 48 : null,
-    market_cap: null,
-    volume_30min: (Number(p.trade_volume_24h) || Number(p.volume) || 0) / 48,
-    fees_30min: (Number(p.fees_24h) || Number(p.fees) || 0) / 48,
-    price_change_5m: null,
-    holders: null,
-    created_at: p.created_at || null,
-    bin_step: p.bin_step,
-    base_fee: p.base_fee_percentage ? Number(p.base_fee_percentage) : undefined,
-  }));
+  const json = await res.json();
+
+  const pools = json.data ?? [];
+
+  return pools.map((p: any) => {
+    const tokenX = p.token_x ?? {};
+    const tokenY = p.token_y ?? {};
+    const feeTvlRatio = p.fee_tvl_ratio?.['30m'] ?? null;
+    const volume30m = p.volume?.['30m'] ?? null;
+    const fees30m = p.fees?.['30m'] ?? null;
+    const createdAt = typeof p.created_at === 'number' ? new Date(p.created_at * 1000).toISOString() : p.created_at ?? null;
+
+    return {
+      pool_address: p.address ?? '',
+      pool_type: 'dlmm' as const,
+      token_a_symbol: tokenX.symbol ?? 'Unknown',
+      token_b_symbol: tokenY.symbol ?? 'Unknown',
+      token_a_mint: tokenX.address ?? '',
+      token_b_mint: tokenY.address ?? '',
+      token_a_logo: getTokenLogo(tokenX.address ?? ''),
+      token_b_logo: getTokenLogo(tokenY.address ?? ''),
+      tvl: Number(p.tvl) || 0,
+      fee_tvl_ratio: feeTvlRatio !== undefined ? Number(feeTvlRatio) : null,
+      market_cap: Number(tokenX.market_cap || 0) + Number(tokenY.market_cap || 0),
+      volume_delta: null,
+      fees_delta: null,
+      price: Number(p.current_price) || 0,
+      price_change: null,
+      score: null,
+      flags: {},
+      holders: Math.max(Number(tokenX.holders || 0), Number(tokenY.holders || 0)),
+      created_at: createdAt,
+      volume_30min: volume30m !== null ? Number(volume30m) : null,
+      fees_30min: fees30m !== null ? Number(fees30m) : null,
+      price_change_5m: null,
+      bin_step: p.pool_config?.bin_step ?? undefined,
+      base_fee: p.pool_config?.base_fee_pct ?? undefined,
+    };
+  });
 }
 
 export async function fetchDAMMPools(): Promise<PoolData[]> {

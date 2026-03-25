@@ -1,8 +1,8 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { ArrowUpDown, ArrowUp, ArrowDown, TrendingUp, TrendingDown, ExternalLink } from 'lucide-react';
 import { PoolData, SortField, SortDirection } from '@/lib/types';
 import { formatCurrency, formatFeeTvl, formatPercent, formatNumber, formatAge, shortenAddress } from '@/lib/formatters';
-import TokenLogo from './TokenLogo';
+import { getLogo } from '@/lib/tokenLogos';
 import LoadingSkeleton from './LoadingSkeleton';
 
 interface PoolTableProps {
@@ -22,6 +22,20 @@ const columns: { key: SortField | 'pool' | 'actions'; label: string; sortable: b
   { key: 'created_at', label: 'Age', sortable: true },
   { key: 'actions', label: 'Actions', sortable: false },
 ];
+
+const TokenImage = ({ mint, symbol, className }: { mint: string; symbol: string; className: string }) => {
+  const [src, setSrc] = useState<string>('/token.png');
+  
+  useEffect(() => {
+    let isMounted = true;
+    getLogo(mint).then((url) => {
+      if (isMounted) setSrc(url);
+    });
+    return () => { isMounted = false; };
+  }, [mint]);
+  
+  return <img src={src} alt={symbol} className={className} onError={(e) => { e.currentTarget.src = '/token.png'; }} />;
+};
 
 export default function PoolTable({ pools, isLoading }: PoolTableProps) {
   const [sortField, setSortField] = useState<SortField>('fee_tvl_ratio');
@@ -109,8 +123,8 @@ export default function PoolTable({ pools, isLoading }: PoolTableProps) {
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       <div className="flex -space-x-1.5">
-                        <TokenLogo src={pool.token_a_logo} symbol={pool.token_a_symbol} />
-                        <TokenLogo src={pool.token_b_logo} symbol={pool.token_b_symbol} />
+                        <TokenImage mint={pool.token_a_mint} symbol={pool.token_a_symbol} className="w-5 h-5 rounded-full object-cover z-10 bg-background" />
+                        <TokenImage mint={pool.token_b_mint} symbol={pool.token_b_symbol} className="w-5 h-5 rounded-full object-cover z-0 bg-background" />
                       </div>
                       <div>
                         <span className="text-foreground font-medium text-sm">

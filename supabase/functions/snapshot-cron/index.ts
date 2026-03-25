@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 const DLMM_URL =
-  "https://dlmm-api.meteora.ag/pair/all_with_pagination?page=0&limit=100&sort_key=volume&order_by=desc";
+  "https://dlmm.datapi.meteora.ag/pools?page=1&page_size=100&sort_by=fee_tvl_ratio_30m:desc";
 const DAMM_URL =
   "https://dammv2-api.meteora.ag/pools?page=0&limit=100&sort_by=tvl&order=desc";
 
@@ -46,19 +46,23 @@ interface RawPool {
 }
 
 function normalizeDLMM(raw: any): RawPool {
+  const tokenX = raw.token_x ?? {};
+  const tokenY = raw.token_y ?? {};
+  const createdAt = typeof raw.created_at === 'number' ? new Date(raw.created_at * 1000).toISOString() : raw.created_at;
+
   return {
-    address: raw.address ?? raw.pair_address ?? "",
-    token_a_symbol: raw.name?.split("-")[0]?.trim() ?? raw.mint_x_symbol ?? "",
-    token_b_symbol: raw.name?.split("-")[1]?.trim() ?? raw.mint_y_symbol ?? "",
-    token_a_mint: raw.mint_x ?? "",
-    token_b_mint: raw.mint_y ?? "",
-    tvl: parseFloat(raw.liquidity ?? raw.tvl ?? 0),
-    volume: parseFloat(raw.trade_volume_24h ?? raw.volume ?? raw.cumulative_volume ?? 0),
-    fees: parseFloat(raw.fees_24h ?? raw.fees ?? raw.cumulative_fee_volume ?? 0),
-    price: parseFloat(raw.current_price ?? raw.price ?? 0),
-    market_cap: parseFloat(raw.market_cap ?? raw.mc ?? 0),
-    holders: parseInt(raw.holders ?? raw.holder_count ?? 0),
-    created_at: raw.created_at ?? raw.pool_created_at ?? new Date().toISOString(),
+    address: raw.address ?? '',
+    token_a_symbol: tokenX.symbol ?? raw.name?.split('-')[0]?.trim() ?? '',
+    token_b_symbol: tokenY.symbol ?? raw.name?.split('-')[1]?.trim() ?? '',
+    token_a_mint: tokenX.address ?? '',
+    token_b_mint: tokenY.address ?? '',
+    tvl: parseFloat(raw.tvl ?? 0),
+    volume: parseFloat(raw.volume?.['30m'] ?? raw.volume?.['24h'] ?? 0),
+    fees: parseFloat(raw.fees?.['30m'] ?? raw.fees?.['24h'] ?? 0),
+    price: parseFloat(raw.current_price ?? 0),
+    market_cap: parseFloat((tokenX.market_cap ?? 0) + (tokenY.market_cap ?? 0)),
+    holders: parseInt(String(Math.max(tokenX.holders ?? 0, tokenY.holders ?? 0))),
+    created_at: createdAt ?? new Date().toISOString(),
   };
 }
 
@@ -87,8 +91,8 @@ function normalizeDAMM(raw: any): RawPool {
 async function fetchDLMMPools(): Promise<RawPool[]> {
   const res = await fetchWithRetry(DLMM_URL);
   const data = await res.json();
-  const pairs = data.pairs ?? data.data ?? data ?? [];
-  return (Array.isArray(pairs) ? pairs : []).map(normalizeDLMM);
+  const pools = data.data ?? [];
+  return (Array.isArray(pools) ? pools : []).map(normalizeDLMM);
 }
 
 async function fetchDAMMPools(): Promise<RawPool[]> {
